@@ -1,6 +1,3 @@
-import logging
-
-
 class Report(object):  # pylint: disable=useless-object-inheritance
     @staticmethod
     def _error_filter(e): return e.is_error
@@ -19,17 +16,14 @@ class Report(object):  # pylint: disable=useless-object-inheritance
 
     def error(self, message):
         self._errors += 1
-        logging.error(message)
         self._entries.append(_Entry.from_error(message))
 
     def warning(self, message):
         self._warnings += 1
-        logging.warning(message)
         self._entries.append(_Entry.from_warning(message))
 
     def notice(self, message):
         self._notices += 1
-        logging.info(message)
         self._entries.append(_Entry.from_notice(message))
 
     @property
