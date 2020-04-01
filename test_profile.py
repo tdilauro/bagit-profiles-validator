@@ -36,6 +36,11 @@ class BagitProfileTest(unittest.TestCase):
         profile_obj = json.loads(profile_json)
         self._serialization_test_helper(profile_obj)
 
+    def test_initialization_from_dict(self):
+        profile = Profile.from_dict(self.profile_obj_from_string)
+        profile_obj = profile.as_dict()
+        self._serialization_test_helper(profile_obj)
+
     def test_dict_serialization(self):
         profile_obj = self.profile_from_string.as_dict()
         self._serialization_test_helper(profile_obj)

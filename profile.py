@@ -62,6 +62,10 @@ class Profile(object):
         return json.dumps(self.as_dict())
 
     @classmethod
+    def from_dict(cls, profile_dict, **kwargs):
+        return cls._factory_helper(profile_dict, kwargs)
+
+    @classmethod
     def from_json(cls, json_string, **kwargs):
         obj = json.loads(json_string)
         return cls._factory_helper(obj, kwargs)
