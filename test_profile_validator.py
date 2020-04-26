@@ -142,6 +142,31 @@ class TestProfileValidator(unittest.TestCase):
         self.assertTrue(success)
         self.assertEqual(len(report.messages()), 0)
 
+    def test_RequiredTagFilesNotAllowed(self):
+        report = Report()
+        profile_dict = self._get_safe_profile_dict()
+        profile_dict["Tag-Files-Allowed"] = []
+        profile_dict["Tag-Files-Required"] = ["tag-foo"]
+        profile = Profile.from_dict(profile_dict)
+        validator = ProfileValidator(profile, report=report)
+        success = validator.validate()
+        self.assertFalse(success)
+        self.assertEqual(len(report.messages()), 1)
+        self.assertRegexpMatches(report.error_messages()[0],
+                                 r'Required tag files .+ not listed in Tag-Files-Allowed')
+
+    def test_RequiredTagFilesOkayIfAllowedNotSpecified(self):
+        report = Report()
+        profile_dict = self._get_safe_profile_dict()
+        # delete "Tag-Files-Allowed" property, if present
+        _ = profile_dict.pop("Tag-Files-Allowed", None)
+        profile_dict["Tag-Files-Required"] = ["tag-foo"]
+        profile = Profile.from_dict(profile_dict)
+        validator = ProfileValidator(profile, report=report)
+        success = validator.validate()
+        self.assertTrue(success)
+        self.assertEqual(len(report.messages()), 0)
+
 
 def sample_profile_v1_3_0():
     return """

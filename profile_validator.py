@@ -1,4 +1,5 @@
 from collections import namedtuple
+from fnmatch import fnmatch
 import logging
 import sys
 if sys.version_info > (3,):
@@ -39,6 +40,7 @@ class ProfileValidator(object):
         valid &= self._validate_accept_bagit_versions()
         valid &= self._validate_bag_info()
         valid &= self._validate_manifests_allowed()
+        valid &= self._validate_tag_files_allowed()
         return valid
 
     # Check self.profile['bag-profile-info'] to see if "Source-Organization",
@@ -122,3 +124,37 @@ class ProfileValidator(object):
                 (self.profile, manifest_type, [str(a) for a in required_but_not_allowed], allowed_attribute)
             )
         return valid
+
+    def _validate_tag_files_allowed(self):
+        """
+        Validate the ``Tag-Files-Allowed`` tag.
+        """
+        allowed = (
+            self.profile["Tag-Files-Allowed"]
+            if "Tag-Files-Allowed" in self.profile
+            else ["*"]
+        )
+        required = (
+            self.profile["Tag-Files-Required"]
+            if "Tag-Files-Required" in self.profile
+            else []
+        )
+
+        valid = True
+        # For each member of 'Tag-Files-Required' ensure it is also in 'Tag-Files-Allowed'.
+        required_but_not_allowed = [f for f in required if not fnmatch_any(f, allowed)]
+        if required_but_not_allowed:
+            valid &= self._error(
+                "%r: Required tag files '%s' not listed in Tag-Files-Allowed"
+                % (self.profile, required_but_not_allowed)
+            )
+
+        return valid
+
+
+# Return true if any of the pattern fnmatches a file path
+def fnmatch_any(f, pats):
+    for pat in pats:
+        if fnmatch(f, pat):
+            return True
+    return False
